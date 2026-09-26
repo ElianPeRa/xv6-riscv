@@ -131,6 +131,9 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 
 UPROGS=\
 	$U/_uptime\
+	$U/_time1\
+	$U/_matmul\
+	$U/_sleep\
 	$U/_cat\
 	$U/_echo\
 	$U/_forktest\
