@@ -1,0 +1,26 @@
+root@localhost:~/xv6-riscv# make qemu
+qemu-system-riscv64 -machine virt -bios none -kernel kernel/kernel -m 128M -smp 1 -nographic -global virtio-mmio.force-legacy=false -drive file=fs.img,if=none,format=raw,id=x0 -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
+
+xv6 kernel is booting
+
+init: starting sh
+$ matmul
+Time: 28 ticks
+$ timecommmand matmul
+Time: 28 ticks
+elapsed time: 28 ticks, cpu time: 28 ticks, 100% CPU
+$ timecommmand matmul &;timecommmand matmul &
+$ Time: 57 ticks
+Time: 55 ticks
+elapsed time: 56 ticks, cpu time: 28 ticks, 50% CPU
+elapsed time: 57 ticks, cpu time: 29 ticks, 50% CPU
+timecommmand sleep 10
+elapsed time: 10 ticks, cpu time: 0 ticks, 0% CPU
+$ timm matmul 5                   exec time failed
+$ timecommmand matmul 5
+exec [C            ailed
+$ exec timecommmand failed
+$ timecommmand matmul 5
+Time: 140 ticks
+elapsed time: 140 ticks, cpu time: 140 ticks, 100% CPU
+$
