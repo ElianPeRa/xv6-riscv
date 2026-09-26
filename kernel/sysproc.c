@@ -36,6 +36,16 @@ sys_wait(void)
   return kwait(p);
 }
 
+//added to check if it works|need to change comment if it does
+uint64
+sys_wait2(void){
+uint64 p;//status int of user address
+uint64 r;//struct rusage of user address
+argaddr(0,&p);
+argaddr(1,&r);
+return kwait2(p,r);
+}
+
 uint64
 sys_sbrk(void)
 {
