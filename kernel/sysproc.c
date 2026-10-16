@@ -6,6 +6,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "vm.h"
+#include "pstat.h"
 
 uint64
 sys_exit(void)
@@ -44,6 +45,15 @@ uint64 r;//struct rusage of user address
 argaddr(0,&p);
 argaddr(1,&r);
 return kwait2(p,r);
+}
+
+////////////here is sys_getprocs()//////////////
+uint64
+sys_getprocs(void){
+//address of the user in the struct pstat array
+uint64 addr;
+argaddr(0, &addr);
+return kgetprocs(addr);
 }
 
 uint64

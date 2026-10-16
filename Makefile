@@ -131,6 +131,7 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 
 UPROGS=\
 	$U/_time\
+	$U/_ps\
 	$U/_uptime\
 	$U/_time1\
 	$U/_matmul\

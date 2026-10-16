@@ -419,7 +419,7 @@ kwait(uint64 addr)
   }
 }
 
-////////////////////////////////////////////kwait2()
+//////////////////////////////////////////kwait2()
 int
 kwait2(uint64 addr, uint64 raddr)
 {
@@ -449,6 +449,8 @@ kwait2(uint64 addr, uint64 raddr)
             release(&wait_lock);
             return -1;
           }
+
+
 //rusage copy in user
 ru.cputime=pp->cputime;
 if(raddr != 0 && copyout(p->pagetable, p->sz,raddr,(char *)&ru,sizeof(ru))<0){
@@ -763,3 +765,60 @@ procdump(void)
     printk("\n");
   }
 }
+int
+kgetprocs(uint64 addr){//1
+  struct proc *p;
+//  struct proc *me=myproc();
+  struct pstat ps;
+  int count=0;
+
+//Iterates every process in the process table.
+for (p = proc; p<&proc[NPROC];p++){//2
+//locks the parents data
+acquire(&wait_lock);
+//locks the state, pid, size
+acquire(&p->lock);
+
+// if this process is not being used, it is skipped
+if (p->state == UNUSED) {//3
+//the information from the parents and the rest of the data
+//is released
+release(&p->lock);
+release(&wait_lock);
+continue;
+}//3
+
+//process ID, state, and size are saved
+ps.pid = p->pid;
+ps.state = p->state;
+ps.size = p->sz;
+//checks if the parent exists
+if (p->parent != 0) {//4
+//if there is a parent then its ID is saved
+ ps.ppid = p->parent->pid;
+} else{
+ ps.ppid = 0;
+}//4
+
+//Saves the process name
+safestrcpy(ps.name, p->name, sizeof(ps.name));
+
+//Releases process information.
+release(&p->lock);
+release(&wait_lock);
+
+//process information is copied into user's array.
+//if (copyout(me->pagetable, me->sz, addr + count * sizeof(ps),(char *),&ps,sizeof(ps)) < 0) {
+//return -1;
+//}
+
+if(either_copyout(1, addr + count * sizeof(struct pstat), &ps, sizeof(ps)) < 0){//5
+      return -1;
+}
+//Counts the process.
+count++;
+}
+
+//Returns the amount of processes found.
+return count;
+}//1
