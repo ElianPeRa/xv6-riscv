@@ -487,7 +487,20 @@ return -1;
 }
 
 
-
+#if SCHEDULER == PRIORITYSCH
+static int
+effpriority(struct proc *p)
+{
+#if AGING
+  int ep = p->priority + (ticks - p->readytime);
+  if(ep > MAXEFFPRIORITY)
+    ep = MAXEFFPRIORITY;
+  return ep;
+#else
+  return p->priority;
+#endif
+}
+#endif
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:
@@ -502,7 +515,7 @@ scheduler(void)
   struct cpu *c = mycpu();
 
   c->proc = 0;
-  for (;;) {
+  for(;;){
     // The most recent process to run may have had interrupts
     // turned off; enable them to avoid a deadlock if all
     // processes are waiting. Then turn them back off
@@ -511,19 +524,52 @@ scheduler(void)
     intr_on();
     intr_off();
 
-    int found = 0;
-    for (p = proc; p < &proc[NPROC]; p++) {
+#if SCHEDULER == PRIORITYSCH
+    // Priority scheduler: look at every RUNNABLE process and
+    // remember the one with the highest effective priority.
+    struct proc *best = 0;
+    int bestprio = -1;
+
+    for(p = proc; p < &proc[NPROC]; p++){
       acquire(&p->lock);
-      if (p->state == RUNNABLE) {
+      if(p->state == RUNNABLE){
+        int ep = effpriority(p);
+        if(ep > bestprio){
+          bestprio = ep;
+          best = p;
+        }
+      }
+      release(&p->lock);
+    }
+
+    if(best == 0){
+      // nothing to run; stop running on this core until an interrupt.
+      asm volatile("wfi");
+      continue;
+    }
+
+    // Run the chosen process, if it is still RUNNABLE.
+    acquire(&best->lock);
+    if(best->state == RUNNABLE){
+      best->state = RUNNING;
+      c->proc = best;
+      swtch(&c->context, &best->context);
+      c->proc = 0;
+    }
+    release(&best->lock);
+
+#elif SCHEDULER == ROUNDROBINSCH
+    // Original xv6 round-robin scheduler.
+    int found = 0;
+    for(p = proc; p < &proc[NPROC]; p++) {
+      acquire(&p->lock);
+      if(p->state == RUNNABLE) {
         // Switch to chosen process.  It is the process's job
         // to release its lock and then reacquire it
         // before jumping back to us.
         p->state = RUNNING;
         c->proc = p;
         swtch(&c->context, &p->context);
-
-        // Don't re-enable interrupts on release.
-        mycpu()->intena = 0;
 
         // Process is done running for now.
         // It should have changed its p->state before coming back.
@@ -532,12 +578,60 @@ scheduler(void)
       }
       release(&p->lock);
     }
-    if (found == 0) {
+    if(found == 0) {
       // nothing to run; stop running on this core until an interrupt.
       asm volatile("wfi");
     }
+
+#else
+#error "SCHEDULER must be ROUNDROBINSCH or PRIORITYSCH"
+#endif
   }
 }
+
+//void
+//scheduler(void)
+//{
+  //struct proc *p;
+  //struct cpu *c = mycpu();
+
+  //c->proc = 0;
+  //for (;;) {
+    //// The most recent process to run may have had interrupts
+    //// turned off; enable them to avoid a deadlock if all
+    //// processes are waiting. Then turn them back off
+    //// to avoid a possible race between an interrupt
+    //// and wfi.
+    //intr_on();
+    //intr_off();
+
+    //int found = 0;
+    //for (p = proc; p < &proc[NPROC]; p++) {
+      //acquire(&p->lock);
+      //if (p->state == RUNNABLE) {
+        //// Switch to chosen process.  It is the process's job
+        //// to release its lock and then reacquire it
+        //// before jumping back to us.
+        //p->state = RUNNING;
+        //c->proc = p;
+        //swtch(&c->context, &p->context);
+
+        //// Don't re-enable interrupts on release.
+        //mycpu()->intena = 0;
+
+        //// Process is done running for now.
+        //// It should have changed its p->state before coming back.
+        //c->proc = 0;
+        //found = 1;
+      //}
+      //release(&p->lock);
+    //}
+    //if (found == 0) {
+      //// nothing to run; stop running on this core until an interrupt.
+      //asm volatile("wfi");
+    //}
+  //}
+//}
 
 // Switch to scheduler.  Must hold only p->lock
 // and have changed proc->state. Saves and restores

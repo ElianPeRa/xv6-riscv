@@ -133,6 +133,9 @@ UPROGS=\
 	$U/_time\
 	$U/_ps\
 	$U/_prioritytest\
+	$U/_schedulertest1\
+	$U/_schedulertest2\
+	$U/_schedulertest3\
 	$U/_uptime\
 	$U/_time1\
 	$U/_matmul\
