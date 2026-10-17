@@ -91,6 +91,8 @@ struct proc {
   int xstate;           // Exit status to be returned to parent's wait
   int pid;              // Process ID
   int priority; //schedules priority from 0 to 99
+  uint readytime;//added for task 3, since ready time changes at the
+//same time as state
 
   // wait_lock must be held when using this:
   struct proc *parent; // Parent process
