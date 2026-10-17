@@ -121,12 +121,38 @@ sys_kill(void)
 // return how many clock tick interrupts have occurred
 // since start.
 uint64
-sys_uptime(void)
-{
+sys_uptime(void){
   uint xticks;
 
   acquire(&tickslock);
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+////////////getpriority
+uint64
+sys_getpriority(void){
+  struct proc *p = myproc();
+  int pr;
+
+  acquire(&p->lock);
+  pr = p->priority;
+  release(&p->lock);
+  return pr;
+}
+////////////setpriority
+uint64
+sys_setpriority(void)
+{
+  struct proc *p = myproc();
+  int pr;
+
+  argint(0, &pr);
+  if(pr < 0 || pr > MAXPRIORITY)
+    return -1;
+
+  acquire(&p->lock);
+  p->priority = pr;
+  release(&p->lock);
+  return 0;
 }

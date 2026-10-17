@@ -125,6 +125,7 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
+  p->priority=0;
   p->cputime=0;
   // Allocate a trapframe page.
   if ((p->trapframe = (struct trapframe *)kalloc()) == 0) {
@@ -275,7 +276,7 @@ kfork(void)
     return -1;
   }
   np->sz = p->sz;
-
+  np->priority=p->priority;
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
 
@@ -792,6 +793,7 @@ continue;
 ps.pid = p->pid;
 ps.state = p->state;
 ps.size = p->sz;
+ps.priority=p->priority;//added in task 2
 //checks if the parent exists
 if (p->parent != 0) {//4
 //if there is a parent then its ID is saved
