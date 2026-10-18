@@ -16,5 +16,8 @@
 #define MAXEFFPRIORITY 99        //SETS THE HIGHEST EFFECTIVE PRIORITY
 #define ROUNDROBINSCH  1 //round robin
 #define PRIORITYSCH  2 //priority schedule
-#define SCHEDULER   PRIORITYSCH// scheduler is using priority schedule
-#define AGING       0 //if 1 then priority scheduler applies aging
+#define SCHEDULER    PRIORITYSCH// scheduler is using priority schedule
+// DELETED FOR NEW AGING POLICY #define AGING       0 //if 1 then priority scheduler applies aging
+#define AGING         1    //1=threshold aging on,0= priority
+#define AGETHRESHOLD  10   //ticks a process has to wait before being boosted
+#define AGEBOOST      50   // added to the priority of a boosted process

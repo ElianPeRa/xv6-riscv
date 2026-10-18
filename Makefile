@@ -136,6 +136,10 @@ UPROGS=\
 	$U/_schedulertest1\
 	$U/_schedulertest2\
 	$U/_schedulertest3\
+	$U/_executions\
+	$U/_pexec\
+	$U/_agingt\
+	$U/_schedulertest\
 	$U/_uptime\
 	$U/_time1\
 	$U/_matmul\
